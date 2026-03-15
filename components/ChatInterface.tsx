@@ -3,26 +3,51 @@
 import { useEffect, useRef, useState } from "react"
 import {
   BarChart3,
+  BrainCircuit,
   Clock3,
   History,
   Newspaper,
   RadioTower,
   Sparkles,
-  TrendingUp
+  TrendingUp,
+  WalletCards
 } from "lucide-react"
 
 import MessageBubble from "@/components/MessageBubble"
 import SearchInput from "@/components/SearchInput"
 import ThemeToggle from "@/components/ThemeToggle"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { createId, formatRelativeTime } from "@/lib/utils"
 import type { ChatMetaPayload, Message, SearchHistoryEntry } from "@/types"
 
-const EXAMPLES = [
-  "SCHD가 뭐야?",
-  "삼성전자 지금 살만해?",
-  "QQQ vs SPY 비교해줘",
-  "배당주 추천해줘"
-]
+const PROMPT_GROUPS = {
+  starter: [
+    "SCHD가 뭐야?",
+    "삼성전자 지금 살만해?",
+    "애플 주가 흐름 설명해줘"
+  ],
+  compare: [
+    "QQQ vs SPY 비교해줘",
+    "VOO와 SCHD 차이 알려줘",
+    "엔비디아 vs AMD 비교해줘"
+  ],
+  income: [
+    "배당주 추천해줘",
+    "월배당 ETF 뭐가 좋아?",
+    "지금 배당 ETF 흐름 요약해줘"
+  ]
+} as const
 
 const HISTORY_STORAGE_KEY = "stock-signal-chat-history"
 const THEME_STORAGE_KEY = "stock-signal-chat-theme"
@@ -45,7 +70,7 @@ function summarizeHtmlError(raw: string) {
   return text.replace(/<[^>]+>/g, "").trim()
 }
 
-function StatCard({
+function MetricCard({
   label,
   value,
   icon: Icon
@@ -55,17 +80,17 @@ function StatCard({
   icon: typeof BarChart3
 }) {
   return (
-    <div className="micro-card">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
-          {label}
-        </p>
-        <div className="rounded-[16px] border border-black/5 bg-white/80 p-2 text-indigo-500 dark:border-white/10 dark:bg-white/5">
+    <Card className="dashboard-shell">
+      <CardContent className="flex items-start justify-between gap-4 p-5">
+        <div>
+          <p className="terminal-label">{label}</p>
+          <p className="mt-3 text-lg font-semibold tracking-tight">{value}</p>
+        </div>
+        <div className="rounded-2xl border border-primary/15 bg-primary/10 p-3 text-primary">
           <Icon className="h-4 w-4" />
         </div>
-      </div>
-      <p className="mt-4 text-base font-semibold text-zinc-900 dark:text-white">{value}</p>
-    </div>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -307,234 +332,252 @@ export default function ChatInterface() {
   const emptyState = messages.length === 0
 
   return (
-    <div className="relative mx-auto flex min-h-screen w-full max-w-[1540px] flex-col gap-5 px-4 py-5 xl:flex-row xl:px-6 xl:py-6">
-      <main className="order-1 panel-surface flex min-h-[calc(100vh-2.5rem)] flex-1 flex-col xl:order-2 xl:min-h-[calc(100vh-3rem)]">
-        <header className="border-b border-black/5 px-5 py-5 dark:border-white/10">
-          <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-            <div className="max-w-3xl space-y-4">
-              <div className="flex flex-wrap gap-2">
-                <span className="chip">
-                  <RadioTower className="h-3.5 w-3.5" />
-                  실시간 스트리밍
-                </span>
-                <span className="chip">
-                  <TrendingUp className="h-3.5 w-3.5" />
-                  주식 / ETF / 비교 분석
-                </span>
-                <span className="chip">
-                  <Newspaper className="h-3.5 w-3.5" />
-                  뉴스 컨텍스트 반영
-                </span>
-              </div>
-
-              <div className="space-y-3">
-                <p className="section-kicker">AI Equity Desk</p>
-                <h2 className="max-w-3xl text-3xl font-semibold tracking-[-0.04em] text-zinc-900 dark:text-white md:text-5xl">
-                  종목을 입력하면 시세와 뉴스, 투자 포인트를 한 화면에서 읽는 분석 챗봇
-                </h2>
-                <p className="max-w-2xl text-sm leading-7 text-zinc-600 dark:text-zinc-300 md:text-base">
-                  단순한 답변형 챗봇이 아니라, 실시간 종목 카드와 뉴스 카드가 먼저 맥락을 만들고
-                  AI가 그 위에서 설명하는 포트폴리오형 경험으로 구성했습니다.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 self-start xl:self-auto">
-              <div className="hidden rounded-[24px] border border-black/5 bg-white/70 px-4 py-3 text-right shadow-sm dark:border-white/10 dark:bg-white/5 md:block">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
-                  Session
-                </p>
-                <p className="mt-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                  최근 검색 {history.length}개
-                </p>
+    <div className="mx-auto grid min-h-screen max-w-[1600px] gap-4 px-4 py-4 xl:grid-cols-[320px_minmax(0,1fr)_320px] xl:px-6 xl:py-6">
+      <aside className="order-2 xl:order-1">
+        <Card className="dashboard-shell surface-grid h-full">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="rounded-2xl border border-primary/20 bg-primary/10 p-3 text-primary">
+                  <BarChart3 className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="terminal-label">Portfolio Project</p>
+                  <CardTitle className="mt-2 text-2xl">Stock Signal Chat</CardTitle>
+                </div>
               </div>
               <ThemeToggle
                 theme={theme}
                 onToggle={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
               />
             </div>
-          </div>
-        </header>
+            <CardDescription className="mt-4 leading-7">
+              실시간 시세와 뉴스, AI 설명을 한 화면에서 읽을 수 있도록 다시 설계한
+              리서치 대시보드형 챗봇입니다.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid gap-3">
+              <MetricCard label="Engine" value="Groq streaming" icon={BrainCircuit} />
+              <MetricCard label="Context" value="Stock + News + Signals" icon={Newspaper} />
+            </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-5">
-          {emptyState ? (
-            <section className="relative mx-auto max-w-5xl overflow-hidden rounded-[36px] border border-black/5 bg-white/55 p-8 backdrop-blur-xl dark:border-white/10 dark:bg-white/5 lg:p-10">
-              <div className="absolute -right-8 -top-10 h-48 w-48 rounded-full bg-cyan-400/10 blur-3xl" />
-              <div className="absolute -bottom-10 left-10 h-52 w-52 rounded-full bg-indigo-500/10 blur-3xl" />
+            <Separator />
 
-              <div className="relative grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
-                <div className="space-y-6">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-indigo-400/20 bg-indigo-500/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-indigo-400">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    첫 질문으로 바로 데모 시작
-                  </div>
+            <div className="space-y-4">
+              <div>
+                <p className="terminal-label">Prompt Deck</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  shadcn 스타일의 탐색형 UI로 질문을 빠르게 시작할 수 있게 정리했습니다.
+                </p>
+              </div>
 
-                  <div className="space-y-4">
-                    <h3 className="text-3xl font-semibold tracking-[-0.04em] text-zinc-900 dark:text-white md:text-4xl">
-                      포트폴리오에서 바로 보여줘도 되는 수준의 금융 AI 경험
-                    </h3>
-                    <p className="max-w-2xl text-sm leading-7 text-zinc-600 dark:text-zinc-300 md:text-base">
-                      질문을 보내면 종목 핵심 지표, 관련 뉴스, AI 요약 분석이 순서대로 붙습니다.
-                      사용자는 답변만 읽는 게 아니라 근거 카드부터 확인할 수 있습니다.
-                    </p>
-                  </div>
+              <Tabs defaultValue="starter" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="starter">Starter</TabsTrigger>
+                  <TabsTrigger value="compare">Compare</TabsTrigger>
+                  <TabsTrigger value="income">Income</TabsTrigger>
+                </TabsList>
+                {Object.entries(PROMPT_GROUPS).map(([key, prompts]) => (
+                  <TabsContent key={key} value={key} className="space-y-2">
+                    {prompts.map((example) => (
+                      <Button
+                        key={example}
+                        variant="outline"
+                        className="h-auto w-full justify-start rounded-2xl px-4 py-3 text-left font-medium"
+                        onClick={() => submitPrompt(example)}
+                      >
+                        {example}
+                      </Button>
+                    ))}
+                  </TabsContent>
+                ))}
+              </Tabs>
+            </div>
+          </CardContent>
+        </Card>
+      </aside>
 
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <StatCard label="AI Engine" value="Groq streaming" icon={RadioTower} />
-                    <StatCard label="Context" value="Stock + News + History" icon={Sparkles} />
-                  </div>
-                </div>
+      <main className="order-1 xl:order-2">
+        <Card className="dashboard-shell flex min-h-[calc(100vh-2rem)] flex-col overflow-hidden">
+          <CardHeader className="space-y-5 border-b border-border/70 pb-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="accent">
+                <RadioTower className="h-3.5 w-3.5" />
+                실시간 스트리밍
+              </Badge>
+              <Badge variant="muted">
+                <TrendingUp className="h-3.5 w-3.5" />
+                주식 / ETF / 비교 분석
+              </Badge>
+              <Badge variant="muted">
+                <WalletCards className="h-3.5 w-3.5" />
+                카드 중심 리서치 UX
+              </Badge>
+            </div>
+            <div className="space-y-3">
+              <p className="terminal-label">AI Equity Desk</p>
+              <CardTitle className="max-w-4xl text-4xl leading-tight tracking-[-0.05em] md:text-5xl">
+                종목을 입력하면 시세, 뉴스, 해석을 한 번에 읽는 리서치 챗 인터페이스
+              </CardTitle>
+              <CardDescription className="max-w-3xl text-sm leading-7 md:text-base">
+                부분적인 카드 꾸미기가 아니라, 탐색부터 분석까지 이어지는 흐름 자체를
+                금융 대시보드처럼 다시 디자인했습니다.
+              </CardDescription>
+            </div>
+          </CardHeader>
 
-                <div className="grid gap-3">
-                  <div className="rounded-[28px] border border-white/10 bg-slate-950/80 p-5 text-white shadow-[0_24px_60px_rgba(2,6,23,0.3)]">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-400">
-                      Preview
-                    </p>
-                    <p className="mt-3 text-lg font-semibold">SCHD는 어떤 ETF야?</p>
-                    <p className="mt-3 text-sm leading-7 text-zinc-300">
-                      배당, 재무건전성, 최근 ETF 관련 뉴스까지 함께 읽어주는 답변 흐름을 기본으로
-                      설계했습니다.
-                    </p>
-                  </div>
+          <div className="flex-1 px-4 py-4 sm:px-6">
+            {emptyState ? (
+              <div className="grid h-full gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+                <Card className="dashboard-shell bg-terminal-glow">
+                  <CardHeader>
+                    <Badge variant="accent" className="w-fit">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Portfolio-ready Hero
+                    </Badge>
+                    <CardTitle className="text-3xl leading-tight tracking-[-0.04em] md:text-4xl">
+                      질문 하나로 카드, 뉴스, 분석 텍스트가 연결되는 흐름을 바로 체험해보세요
+                    </CardTitle>
+                    <CardDescription className="text-sm leading-7 md:text-base">
+                      기존의 평면적인 챗 UI 대신, 좌우 패널과 스크롤 영역이 살아 있는
+                      리서치 터미널 느낌으로 전체 화면을 재구성했습니다.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="grid gap-3 sm:grid-cols-3">
+                    <MetricCard label="Layer 01" value="Market Snapshot" icon={BarChart3} />
+                    <MetricCard label="Layer 02" value="Recent News" icon={Newspaper} />
+                    <MetricCard label="Layer 03" value="AI Summary" icon={BrainCircuit} />
+                  </CardContent>
+                </Card>
 
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-                    <div className="rounded-[24px] border border-black/5 bg-black/5 p-4 dark:border-white/10 dark:bg-white/5">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
-                        Recent
-                      </p>
-                      <p className="mt-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                        QQQ vs SPY 비교
-                      </p>
-                    </div>
-                    <div className="rounded-[24px] border border-black/5 bg-black/5 p-4 dark:border-white/10 dark:bg-white/5">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
-                        Insight
-                      </p>
-                      <p className="mt-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                        카드 우선, 설명은 그 다음
-                      </p>
-                    </div>
-                  </div>
+                <div className="grid gap-4">
+                  <Card className="dashboard-shell border-primary/15 bg-primary/5">
+                    <CardHeader className="space-y-2">
+                      <p className="terminal-label">Preview Prompt</p>
+                      <CardTitle className="text-xl">SCHD는 어떤 ETF야?</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm leading-7 text-muted-foreground">
+                      배당 중심 ETF의 성격, 최근 뉴스 흐름, 현재 가격 컨텍스트까지 함께 보여주는
+                      시나리오를 기본 진입점으로 둡니다.
+                    </CardContent>
+                  </Card>
+
+                  <Card className="dashboard-shell">
+                    <CardHeader className="space-y-2">
+                      <p className="terminal-label">Prompt Ideas</p>
+                      <CardDescription>첫 화면에서도 바로 눌러볼 수 있는 대표 질문들입니다.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-wrap gap-2">
+                      {PROMPT_GROUPS.starter.map((example) => (
+                        <button
+                          key={example}
+                          type="button"
+                          onClick={() => submitPrompt(example)}
+                          className="rounded-full border border-border/70 bg-secondary/70 px-3 py-1.5 text-xs font-medium transition hover:border-primary/30 hover:text-primary"
+                        >
+                          {example}
+                        </button>
+                      ))}
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
-            </section>
-          ) : (
-            <div className="mx-auto flex max-w-5xl flex-col gap-5 pb-2">
-              {messages.map((message) => (
-                <MessageBubble key={message.id} message={message} />
-              ))}
-              <div ref={bottomRef} />
-            </div>
-          )}
-        </div>
+            ) : (
+              <ScrollArea className="h-[calc(100vh-420px)] pr-2 xl:h-[calc(100vh-345px)]">
+                <div className="mx-auto flex max-w-5xl flex-col gap-5 pb-4">
+                  {messages.map((message) => (
+                    <MessageBubble key={message.id} message={message} />
+                  ))}
+                  <div ref={bottomRef} />
+                </div>
+              </ScrollArea>
+            )}
+          </div>
 
-        <div className="border-t border-black/5 px-4 py-4 dark:border-white/10 sm:px-5">
-          <div className="mx-auto max-w-5xl">
+          <div className="border-t border-border/70 px-4 py-4 sm:px-6">
             <SearchInput
               value={prompt}
               disabled={isStreaming}
               showExamples={emptyState}
-              examples={EXAMPLES}
+              examples={PROMPT_GROUPS.starter}
               onChange={setPrompt}
               onSubmit={() => submitPrompt()}
               onPickExample={(example) => submitPrompt(example)}
             />
           </div>
-        </div>
+        </Card>
       </main>
 
-      <aside className="order-2 panel-surface panel-grid w-full overflow-hidden xl:order-1 xl:sticky xl:top-6 xl:h-[calc(100vh-3rem)] xl:w-[360px]">
-        <div className="flex h-full flex-col gap-5 p-5">
-          <section className="relative overflow-hidden rounded-[30px] border border-indigo-400/15 bg-gradient-to-br from-indigo-500/15 via-slate-900/10 to-cyan-400/5 p-5">
-            <div className="flex items-center gap-3">
-              <div className="rounded-[20px] border border-white/10 bg-white/80 p-3 text-indigo-500 shadow-sm dark:bg-white/10">
-                <BarChart3 className="h-5 w-5" />
+      <aside className="order-3">
+        <Card className="dashboard-shell surface-grid h-full">
+          <CardHeader className="space-y-3">
+            <p className="terminal-label">Signal Board</p>
+            <CardTitle className="text-2xl">Recent Searches</CardTitle>
+            <CardDescription>
+              최근 대화 히스토리와 이 앱의 사용 포인트를 한쪽 패널에 모았습니다.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-6">
+            <div className="space-y-3">
+              <Badge variant="muted">저장 개수 {history.length}</Badge>
+              <Separator />
+            </div>
+
+            <ScrollArea className="h-[240px] pr-2">
+              <div className="space-y-3">
+                {history.length === 0 ? (
+                  <Card className="border-dashed bg-secondary/40">
+                    <CardContent className="p-4 text-sm leading-7 text-muted-foreground">
+                      첫 질문을 보내면 이곳에 최근 검색 종목이 쌓입니다.
+                    </CardContent>
+                  </Card>
+                ) : (
+                  history.map((entry) => (
+                    <button
+                      key={entry.id}
+                      type="button"
+                      onClick={() => submitPrompt(entry.prompt)}
+                      className="w-full text-left"
+                    >
+                      <Card className="transition hover:border-primary/25 hover:bg-accent/30">
+                        <CardContent className="space-y-3 p-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <p className="line-clamp-2 text-sm font-medium leading-6">
+                              {entry.prompt}
+                            </p>
+                            <Clock3 className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" />
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {entry.tickers.map((ticker) => (
+                              <Badge key={ticker} variant="muted">
+                                {ticker}
+                              </Badge>
+                            ))}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {formatRelativeTime(entry.createdAt)}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </button>
+                  ))
+                )}
               </div>
-              <div>
-                <p className="section-kicker">Portfolio Project</p>
-                <h1 className="mt-1 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-                  Stock Signal Chat
-                </h1>
+            </ScrollArea>
+
+            <Separator />
+
+            <div className="space-y-3">
+              <p className="terminal-label">How To Ask Better</p>
+              <div className="space-y-3 text-sm leading-7 text-muted-foreground">
+                <p>비교 질문일수록 티커를 두 개 이상 직접 적어주면 카드와 분석 품질이 좋아집니다.</p>
+                <p>배당, 성장, 적립식, 단기 모멘텀처럼 관점을 함께 넣으면 더 실전형 답변이 나옵니다.</p>
               </div>
             </div>
-
-            <p className="mt-5 text-sm leading-7 text-zinc-600 dark:text-zinc-300">
-              Groq 스트리밍, yfinance 시세, Finnhub 뉴스를 한 흐름으로 묶어 종목 검색부터 해석까지
-              자연스럽게 이어지도록 만든 분석 챗봇입니다.
-            </p>
-
-            <div className="mt-5 flex flex-wrap gap-2">
-              <span className="chip">Groq</span>
-              <span className="chip">yfinance</span>
-              <span className="chip">Finnhub</span>
-              <span className="chip">SSE</span>
-            </div>
-          </section>
-
-          <section className="space-y-3">
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-400">
-              <Sparkles className="h-4 w-4" />
-              Quick Prompts
-            </div>
-
-            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-              {EXAMPLES.map((example) => (
-                <button
-                  key={example}
-                  type="button"
-                  onClick={() => submitPrompt(example)}
-                  className="rounded-[22px] border border-black/5 bg-black/5 px-4 py-3 text-left text-sm font-medium text-zinc-700 transition hover:-translate-y-0.5 hover:border-indigo-400/25 hover:bg-indigo-500/8 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:border-indigo-400/25 dark:hover:bg-indigo-500/10"
-                >
-                  {example}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="flex min-h-0 flex-1 flex-col space-y-3">
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-400">
-              <History className="h-4 w-4" />
-              Recent Searches
-            </div>
-
-            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
-              {history.length === 0 ? (
-                <div className="rounded-[24px] border border-dashed border-black/10 bg-black/5 p-5 text-sm leading-7 text-zinc-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400">
-                  검색 기록은 브라우저에 저장됩니다. 첫 질문을 보내면 이곳에 최근 종목이 쌓입니다.
-                </div>
-              ) : (
-                history.map((entry) => (
-                  <button
-                    key={entry.id}
-                    type="button"
-                    onClick={() => submitPrompt(entry.prompt)}
-                    className="w-full rounded-[24px] border border-black/5 bg-black/5 p-4 text-left transition hover:-translate-y-0.5 hover:border-cyan-400/25 hover:bg-cyan-400/5 dark:border-white/10 dark:bg-white/5 dark:hover:border-cyan-400/25 dark:hover:bg-cyan-400/10"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <p className="line-clamp-2 text-sm font-medium leading-6 text-zinc-900 dark:text-zinc-100">
-                        {entry.prompt}
-                      </p>
-                      <Clock3 className="mt-1 h-4 w-4 shrink-0 text-zinc-400" />
-                    </div>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {entry.tickers.map((ticker) => (
-                        <span
-                          key={ticker}
-                          className="rounded-full border border-black/5 bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 dark:border-white/10 dark:bg-white/10 dark:text-zinc-200"
-                        >
-                          {ticker}
-                        </span>
-                      ))}
-                    </div>
-                    <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
-                      {formatRelativeTime(entry.createdAt)}
-                    </p>
-                  </button>
-                ))
-              )}
-            </div>
-          </section>
-        </div>
+          </CardContent>
+        </Card>
       </aside>
     </div>
   )
