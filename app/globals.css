@@ -49,7 +49,7 @@
   }
 
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
 
   html,
@@ -58,7 +58,8 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
     background-image:
       radial-gradient(circle at 12% 14%, rgba(59, 130, 246, 0.18), transparent 24%),
       radial-gradient(circle at 86% 10%, rgba(45, 212, 191, 0.12), transparent 20%),
@@ -82,11 +83,19 @@
   }
 
   .dashboard-shell {
-    @apply border-border/70 bg-card/70 shadow-panel backdrop-blur-2xl;
+    border-color: hsl(var(--border) / 0.7);
+    background-color: hsl(var(--card) / 0.7);
+    box-shadow: 0 24px 80px rgba(2, 6, 23, 0.28);
+    backdrop-filter: blur(40px);
   }
 
   .terminal-label {
-    @apply font-mono text-[11px] font-semibold uppercase tracking-[0.3em] text-muted-foreground;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: hsl(var(--muted-foreground));
   }
 
   .soft-cut {
