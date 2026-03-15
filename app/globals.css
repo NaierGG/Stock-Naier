@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(circle at top, rgba(99, 102, 241, 0.16), transparent 30%),
+    radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.12), transparent 22%),
+    linear-gradient(180deg, #f5f7fb 0%, #edf0f7 100%);
+}
+
+.dark body {
+  background:
+    radial-gradient(circle at top, rgba(99, 102, 241, 0.18), transparent 30%),
+    radial-gradient(circle at bottom left, rgba(45, 212, 191, 0.08), transparent 24%),
+    linear-gradient(180deg, #09090b 0%, #0f1117 44%, #111827 100%);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(161, 161, 170, 0.45) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(161, 161, 170, 0.35);
+  border-radius: 999px;
+}
+
+@layer components {
+  .panel-surface {
+    @apply rounded-3xl border border-black/5 bg-white/75 shadow-ambient backdrop-blur-xl dark:border-white/10 dark:bg-white/5;
+  }
+
+  .panel-grid {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-2 rounded-full border border-black/10 bg-black/5 px-3 py-1 text-xs font-medium text-zinc-600 transition hover:border-black/20 hover:bg-black/10 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300 dark:hover:border-white/20 dark:hover:bg-white/10;
+  }
+}
+
+.markdown-content {
+  max-width: none;
+  font-size: 0.95rem;
+  line-height: 1.8;
+}
+
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4 {
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.markdown-content p {
+  margin: 0.7rem 0;
+}
+
+.markdown-content ul {
+  margin: 0.8rem 0;
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+
+.markdown-content li {
+  margin: 0.25rem 0;
+}
+
+.markdown-content a {
+  color: #6366f1;
+  text-decoration: none;
+}
+
+.markdown-content a:hover {
+  color: #818cf8;
+}
