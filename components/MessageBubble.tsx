@@ -6,7 +6,6 @@ import remarkGfm from "remark-gfm"
 import NewsCard from "@/components/NewsCard"
 import StockCard from "@/components/StockCard"
 import TypingIndicator from "@/components/TypingIndicator"
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import type { Message } from "@/types"
@@ -16,27 +15,27 @@ export default function MessageBubble({ message }: { message: Message }) {
 
   return (
     <article className={cn("flex w-full", isUser ? "justify-end" : "justify-start")}>
-      <div className={cn("w-full space-y-3", isUser ? "max-w-2xl" : "max-w-5xl")}>
+      <div className={cn("w-full space-y-2", isUser ? "max-w-2xl" : "max-w-3xl")}>
         <div
           className={cn(
-            "flex items-center gap-2",
+            "flex items-center gap-2 text-xs text-muted-foreground",
             isUser ? "justify-end" : "justify-start"
           )}
         >
-          <Badge variant={isUser ? "accent" : "muted"} className="rounded-full">
-            {isUser ? "User Prompt" : "AI Analysis"}
-          </Badge>
+          <span className="font-medium text-foreground/90">
+            {isUser ? "나" : "Stock Signal Chat"}
+          </span>
+          {!isUser && message.ticker ? <span>{message.ticker}</span> : null}
         </div>
 
         <Card
           className={cn(
-            "overflow-hidden",
-            isUser
-              ? "border-primary/15 bg-gradient-to-r from-indigo-500 to-cyan-500 text-white"
-              : "dashboard-shell"
+            "rounded-[24px] shadow-none",
+            isUser ? "bg-secondary" : "bg-card",
+            !isUser && message.status === "error" && "border-destructive/40"
           )}
         >
-          <CardContent className="space-y-5 p-5">
+          <CardContent className="space-y-4 p-5">
             {!isUser && message.stocks?.length ? (
               <div className="grid gap-3 lg:grid-cols-2">
                 {message.stocks.map((stock) => (
