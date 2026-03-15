@@ -4,10 +4,22 @@
 
 :root {
   color-scheme: light;
+  --page-bg: #eff3fb;
+  --page-fg: #0f172a;
+  --panel-bg: rgba(255, 255, 255, 0.78);
+  --panel-border: rgba(15, 23, 42, 0.08);
+  --panel-shadow: 0 28px 90px rgba(15, 23, 42, 0.12);
+  --grid-color: rgba(15, 23, 42, 0.06);
 }
 
 .dark {
   color-scheme: dark;
+  --page-bg: #060916;
+  --page-fg: #f8fafc;
+  --panel-bg: rgba(9, 13, 26, 0.74);
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --panel-shadow: 0 40px 120px rgba(2, 6, 23, 0.46);
+  --grid-color: rgba(255, 255, 255, 0.04);
 }
 
 html,
@@ -15,23 +27,43 @@ body {
   min-height: 100%;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
+  color: var(--page-fg);
   background:
-    radial-gradient(circle at top, rgba(99, 102, 241, 0.16), transparent 30%),
-    radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.12), transparent 22%),
-    linear-gradient(180deg, #f5f7fb 0%, #edf0f7 100%);
+    radial-gradient(circle at 12% 14%, rgba(76, 110, 245, 0.18), transparent 24%),
+    radial-gradient(circle at 86% 10%, rgba(45, 212, 191, 0.12), transparent 20%),
+    radial-gradient(circle at 50% 100%, rgba(244, 114, 182, 0.08), transparent 30%),
+    linear-gradient(180deg, #f9fbff 0%, var(--page-bg) 100%);
 }
 
 .dark body {
   background:
-    radial-gradient(circle at top, rgba(99, 102, 241, 0.18), transparent 30%),
-    radial-gradient(circle at bottom left, rgba(45, 212, 191, 0.08), transparent 24%),
-    linear-gradient(180deg, #09090b 0%, #0f1117 44%, #111827 100%);
+    radial-gradient(circle at 12% 14%, rgba(76, 110, 245, 0.2), transparent 24%),
+    radial-gradient(circle at 86% 10%, rgba(45, 212, 191, 0.1), transparent 20%),
+    radial-gradient(circle at 50% 100%, rgba(244, 114, 182, 0.08), transparent 28%),
+    linear-gradient(180deg, #04070d 0%, var(--page-bg) 100%);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.56), transparent 90%);
+  opacity: 0.8;
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(161, 161, 170, 0.45) transparent;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -44,61 +76,119 @@ body {
 }
 
 *::-webkit-scrollbar-thumb {
-  background: rgba(161, 161, 170, 0.35);
+  background: rgba(148, 163, 184, 0.32);
   border-radius: 999px;
+}
+
+@layer base {
+  body {
+    @apply antialiased;
+  }
+
+  button,
+  input,
+  textarea {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent;
+  }
 }
 
 @layer components {
   .panel-surface {
-    @apply rounded-3xl border border-black/5 bg-white/75 shadow-ambient backdrop-blur-xl dark:border-white/10 dark:bg-white/5;
+    position: relative;
+    overflow: hidden;
+    border-radius: 32px;
+    border: 1px solid var(--panel-border);
+    background: var(--panel-bg);
+    box-shadow: var(--panel-shadow);
+    backdrop-filter: blur(24px);
+  }
+
+  .panel-surface::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 45%);
+    opacity: 0.4;
   }
 
   .panel-grid {
     background-image:
-      linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-    background-size: 28px 28px;
+      linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+    background-size: 30px 30px;
   }
 
   .chip {
-    @apply inline-flex items-center gap-2 rounded-full border border-black/10 bg-black/5 px-3 py-1 text-xs font-medium text-zinc-600 transition hover:border-black/20 hover:bg-black/10 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300 dark:hover:border-white/20 dark:hover:bg-white/10;
+    @apply inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] transition;
+    border-color: rgba(15, 23, 42, 0.08);
+    background: rgba(15, 23, 42, 0.04);
+    color: rgb(71 85 105 / 0.88);
+  }
+
+  .dark .chip {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgb(226 232 240 / 0.82);
+  }
+
+  .chip:hover {
+    transform: translateY(-1px);
+    border-color: rgba(99, 102, 241, 0.26);
+    background: rgba(99, 102, 241, 0.08);
+    color: rgb(99 102 241);
+  }
+
+  .section-kicker {
+    @apply text-[11px] font-semibold uppercase tracking-[0.28em] text-zinc-500 dark:text-zinc-400;
+  }
+
+  .micro-card {
+    @apply rounded-[24px] border p-4;
+    border-color: rgba(15, 23, 42, 0.08);
+    background: rgba(15, 23, 42, 0.04);
+  }
+
+  .dark .micro-card {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
   }
 }
 
 .markdown-content {
   max-width: none;
-  font-size: 0.95rem;
-  line-height: 1.8;
+  font-size: 0.98rem;
+  line-height: 1.85;
 }
 
 .markdown-content h2,
 .markdown-content h3,
 .markdown-content h4 {
-  margin-top: 1.25rem;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  margin-top: 1.3rem;
+  margin-bottom: 0.6rem;
+  font-weight: 650;
+  letter-spacing: -0.03em;
 }
 
 .markdown-content p {
-  margin: 0.7rem 0;
+  margin: 0.8rem 0;
 }
 
 .markdown-content ul {
-  margin: 0.8rem 0;
+  margin: 0.9rem 0;
   padding-left: 1.25rem;
   list-style: disc;
 }
 
 .markdown-content li {
-  margin: 0.25rem 0;
+  margin: 0.3rem 0;
 }
 
 .markdown-content a {
-  color: #6366f1;
+  color: #7c9bff;
   text-decoration: none;
 }
 
 .markdown-content a:hover {
-  color: #818cf8;
+  color: #9ab0ff;
 }

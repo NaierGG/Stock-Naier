@@ -5,6 +5,7 @@ import {
   BarChart3,
   Clock3,
   History,
+  Newspaper,
   RadioTower,
   Sparkles,
   TrendingUp
@@ -42,6 +43,30 @@ function summarizeHtmlError(raw: string) {
   const text = titleMatch?.[1] ?? h1Match?.[1] ?? "서버가 HTML 오류 페이지를 반환했습니다."
 
   return text.replace(/<[^>]+>/g, "").trim()
+}
+
+function StatCard({
+  label,
+  value,
+  icon: Icon
+}: {
+  label: string
+  value: string
+  icon: typeof BarChart3
+}) {
+  return (
+    <div className="micro-card">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
+          {label}
+        </p>
+        <div className="rounded-[16px] border border-black/5 bg-white/80 p-2 text-indigo-500 dark:border-white/10 dark:bg-white/5">
+          <Icon className="h-4 w-4" />
+        </div>
+      </div>
+      <p className="mt-4 text-base font-semibold text-zinc-900 dark:text-white">{value}</p>
+    </div>
+  )
 }
 
 export default function ChatInterface() {
@@ -282,163 +307,119 @@ export default function ChatInterface() {
   const emptyState = messages.length === 0
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-[1600px] flex-col gap-4 px-4 py-4 lg:flex-row lg:px-6 lg:py-6">
-      <aside className="panel-surface panel-grid w-full overflow-hidden lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)] lg:w-[330px]">
-        <div className="flex h-full flex-col p-5">
-          <div className="rounded-[1.75rem] border border-indigo-500/15 bg-gradient-to-br from-indigo-500/15 to-emerald-500/5 p-5">
-            <div className="flex items-center gap-3">
-              <div className="rounded-2xl bg-white/80 p-3 text-indigo-500 shadow-sm dark:bg-white/10">
-                <BarChart3 className="h-5 w-5" />
+    <div className="relative mx-auto flex min-h-screen w-full max-w-[1540px] flex-col gap-5 px-4 py-5 xl:flex-row xl:px-6 xl:py-6">
+      <main className="order-1 panel-surface flex min-h-[calc(100vh-2.5rem)] flex-1 flex-col xl:order-2 xl:min-h-[calc(100vh-3rem)]">
+        <header className="border-b border-black/5 px-5 py-5 dark:border-white/10">
+          <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+            <div className="max-w-3xl space-y-4">
+              <div className="flex flex-wrap gap-2">
+                <span className="chip">
+                  <RadioTower className="h-3.5 w-3.5" />
+                  실시간 스트리밍
+                </span>
+                <span className="chip">
+                  <TrendingUp className="h-3.5 w-3.5" />
+                  주식 / ETF / 비교 분석
+                </span>
+                <span className="chip">
+                  <Newspaper className="h-3.5 w-3.5" />
+                  뉴스 컨텍스트 반영
+                </span>
               </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.26em] text-zinc-500 dark:text-zinc-400">
-                  Portfolio Project
+
+              <div className="space-y-3">
+                <p className="section-kicker">AI Equity Desk</p>
+                <h2 className="max-w-3xl text-3xl font-semibold tracking-[-0.04em] text-zinc-900 dark:text-white md:text-5xl">
+                  종목을 입력하면 시세와 뉴스, 투자 포인트를 한 화면에서 읽는 분석 챗봇
+                </h2>
+                <p className="max-w-2xl text-sm leading-7 text-zinc-600 dark:text-zinc-300 md:text-base">
+                  단순한 답변형 챗봇이 아니라, 실시간 종목 카드와 뉴스 카드가 먼저 맥락을 만들고
+                  AI가 그 위에서 설명하는 포트폴리오형 경험으로 구성했습니다.
                 </p>
-                <h1 className="mt-1 text-xl font-semibold">Stock Signal Chat</h1>
               </div>
             </div>
-            <p className="mt-4 text-sm leading-7 text-zinc-600 dark:text-zinc-300">
-              Groq 스트리밍, yfinance 시세, Finnhub 뉴스를 하나의 대화형 투자 분석 경험으로 엮은 웹앱입니다.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <span className="chip">Groq</span>
-              <span className="chip">yfinance</span>
-              <span className="chip">Finnhub</span>
-              <span className="chip">SSE</span>
-            </div>
-          </div>
 
-          <div className="mt-5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-400">
-            <Sparkles className="h-4 w-4" />
-            Quick Prompts
-          </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {EXAMPLES.map((example) => (
-              <button
-                key={example}
-                type="button"
-                onClick={() => submitPrompt(example)}
-                className="chip"
-              >
-                {example}
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-8 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-400">
-            <History className="h-4 w-4" />
-            Recent Searches
-          </div>
-
-          <div className="mt-3 flex-1 space-y-3 overflow-y-auto pr-1">
-            {history.length === 0 ? (
-              <div className="rounded-[1.5rem] border border-dashed border-black/10 p-4 text-sm text-zinc-500 dark:border-white/10 dark:text-zinc-400">
-                검색 기록은 브라우저에 저장됩니다. 첫 질문을 보내면 이곳에 최근 종목이 쌓입니다.
+            <div className="flex items-center gap-3 self-start xl:self-auto">
+              <div className="hidden rounded-[24px] border border-black/5 bg-white/70 px-4 py-3 text-right shadow-sm dark:border-white/10 dark:bg-white/5 md:block">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
+                  Session
+                </p>
+                <p className="mt-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  최근 검색 {history.length}개
+                </p>
               </div>
-            ) : (
-              history.map((entry) => (
-                <button
-                  key={entry.id}
-                  type="button"
-                  onClick={() => submitPrompt(entry.prompt)}
-                  className="w-full rounded-[1.5rem] border border-black/5 bg-black/5 p-4 text-left transition hover:border-indigo-400/20 hover:bg-indigo-500/5 dark:border-white/10 dark:bg-white/5 dark:hover:border-indigo-400/20 dark:hover:bg-indigo-500/10"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="line-clamp-2 text-sm font-medium leading-6 text-zinc-900 dark:text-white">
-                      {entry.prompt}
-                    </p>
-                    <Clock3 className="mt-1 h-4 w-4 shrink-0 text-zinc-400" />
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {entry.tickers.map((ticker) => (
-                      <span
-                        key={ticker}
-                        className="rounded-full bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 dark:bg-white/10 dark:text-zinc-200"
-                      >
-                        {ticker}
-                      </span>
-                    ))}
-                  </div>
-                  <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
-                    {formatRelativeTime(entry.createdAt)}
-                  </p>
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-      </aside>
-
-      <main className="panel-surface flex min-h-[calc(100vh-2rem)] flex-1 flex-col overflow-hidden lg:min-h-[calc(100vh-3rem)]">
-        <header className="flex flex-col gap-4 border-b border-black/5 px-5 py-5 dark:border-white/10 md:flex-row md:items-center md:justify-between">
-          <div>
-            <div className="flex flex-wrap gap-2">
-              <span className="chip">
-                <RadioTower className="h-3.5 w-3.5" />
-                실시간 스트리밍 분석
-              </span>
-              <span className="chip">
-                <TrendingUp className="h-3.5 w-3.5" />
-                ETF / 주식 / 비교 질문
-              </span>
+              <ThemeToggle
+                theme={theme}
+                onToggle={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
+              />
             </div>
-            <h2 className="mt-4 text-2xl font-semibold tracking-tight">
-              종목을 입력하면 시세와 뉴스까지 함께 읽어주는 분석 챗봇
-            </h2>
-            <p className="mt-2 text-sm leading-7 text-zinc-600 dark:text-zinc-300">
-              티커 또는 종목명을 입력하면 최신 데이터 컨텍스트를 붙여 AI 답변을 스트리밍으로 보여줍니다.
-            </p>
           </div>
-          <ThemeToggle
-            theme={theme}
-            onToggle={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
-          />
         </header>
 
-        {history.length > 0 ? (
-          <div className="border-b border-black/5 px-5 py-3 dark:border-white/10 lg:hidden">
-            <div className="flex gap-2 overflow-x-auto">
-              {history.map((entry) => (
-                <button
-                  key={entry.id}
-                  type="button"
-                  onClick={() => submitPrompt(entry.prompt)}
-                  className="chip whitespace-nowrap"
-                >
-                  {entry.tickers.join(" / ")}
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : null}
-
-        <div className="flex-1 overflow-y-auto px-4 py-5 md:px-5">
+        <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-5">
           {emptyState ? (
-            <section className="mx-auto flex max-w-4xl flex-col items-center justify-center rounded-[2rem] border border-dashed border-black/10 bg-black/5 px-6 py-14 text-center dark:border-white/10 dark:bg-white/5">
-              <div className="rounded-full bg-indigo-500/10 p-4 text-indigo-400">
-                <Sparkles className="h-7 w-7" />
-              </div>
-              <h3 className="mt-6 text-3xl font-semibold tracking-tight">
-                빠르고 보기 좋은 주식 분석 데모를 바로 시작해보세요
-              </h3>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-zinc-600 dark:text-zinc-300">
-                첫 질문을 보내면 종목 카드, 뉴스 카드, 마크다운 분석 답변이 한 번에 나타납니다.
-              </p>
-              <div className="mt-8 flex flex-wrap justify-center gap-2">
-                {EXAMPLES.map((example) => (
-                  <button
-                    key={example}
-                    type="button"
-                    onClick={() => submitPrompt(example)}
-                    className="chip"
-                  >
-                    {example}
-                  </button>
-                ))}
+            <section className="relative mx-auto max-w-5xl overflow-hidden rounded-[36px] border border-black/5 bg-white/55 p-8 backdrop-blur-xl dark:border-white/10 dark:bg-white/5 lg:p-10">
+              <div className="absolute -right-8 -top-10 h-48 w-48 rounded-full bg-cyan-400/10 blur-3xl" />
+              <div className="absolute -bottom-10 left-10 h-52 w-52 rounded-full bg-indigo-500/10 blur-3xl" />
+
+              <div className="relative grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+                <div className="space-y-6">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-indigo-400/20 bg-indigo-500/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-indigo-400">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    첫 질문으로 바로 데모 시작
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="text-3xl font-semibold tracking-[-0.04em] text-zinc-900 dark:text-white md:text-4xl">
+                      포트폴리오에서 바로 보여줘도 되는 수준의 금융 AI 경험
+                    </h3>
+                    <p className="max-w-2xl text-sm leading-7 text-zinc-600 dark:text-zinc-300 md:text-base">
+                      질문을 보내면 종목 핵심 지표, 관련 뉴스, AI 요약 분석이 순서대로 붙습니다.
+                      사용자는 답변만 읽는 게 아니라 근거 카드부터 확인할 수 있습니다.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <StatCard label="AI Engine" value="Groq streaming" icon={RadioTower} />
+                    <StatCard label="Context" value="Stock + News + History" icon={Sparkles} />
+                  </div>
+                </div>
+
+                <div className="grid gap-3">
+                  <div className="rounded-[28px] border border-white/10 bg-slate-950/80 p-5 text-white shadow-[0_24px_60px_rgba(2,6,23,0.3)]">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-400">
+                      Preview
+                    </p>
+                    <p className="mt-3 text-lg font-semibold">SCHD는 어떤 ETF야?</p>
+                    <p className="mt-3 text-sm leading-7 text-zinc-300">
+                      배당, 재무건전성, 최근 ETF 관련 뉴스까지 함께 읽어주는 답변 흐름을 기본으로
+                      설계했습니다.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                    <div className="rounded-[24px] border border-black/5 bg-black/5 p-4 dark:border-white/10 dark:bg-white/5">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
+                        Recent
+                      </p>
+                      <p className="mt-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                        QQQ vs SPY 비교
+                      </p>
+                    </div>
+                    <div className="rounded-[24px] border border-black/5 bg-black/5 p-4 dark:border-white/10 dark:bg-white/5">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
+                        Insight
+                      </p>
+                      <p className="mt-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                        카드 우선, 설명은 그 다음
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </section>
           ) : (
-            <div className="mx-auto flex max-w-5xl flex-col gap-4">
+            <div className="mx-auto flex max-w-5xl flex-col gap-5 pb-2">
               {messages.map((message) => (
                 <MessageBubble key={message.id} message={message} />
               ))}
@@ -447,7 +428,7 @@ export default function ChatInterface() {
           )}
         </div>
 
-        <div className="border-t border-black/5 px-4 py-4 dark:border-white/10 md:px-5">
+        <div className="border-t border-black/5 px-4 py-4 dark:border-white/10 sm:px-5">
           <div className="mx-auto max-w-5xl">
             <SearchInput
               value={prompt}
@@ -461,6 +442,100 @@ export default function ChatInterface() {
           </div>
         </div>
       </main>
+
+      <aside className="order-2 panel-surface panel-grid w-full overflow-hidden xl:order-1 xl:sticky xl:top-6 xl:h-[calc(100vh-3rem)] xl:w-[360px]">
+        <div className="flex h-full flex-col gap-5 p-5">
+          <section className="relative overflow-hidden rounded-[30px] border border-indigo-400/15 bg-gradient-to-br from-indigo-500/15 via-slate-900/10 to-cyan-400/5 p-5">
+            <div className="flex items-center gap-3">
+              <div className="rounded-[20px] border border-white/10 bg-white/80 p-3 text-indigo-500 shadow-sm dark:bg-white/10">
+                <BarChart3 className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="section-kicker">Portfolio Project</p>
+                <h1 className="mt-1 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+                  Stock Signal Chat
+                </h1>
+              </div>
+            </div>
+
+            <p className="mt-5 text-sm leading-7 text-zinc-600 dark:text-zinc-300">
+              Groq 스트리밍, yfinance 시세, Finnhub 뉴스를 한 흐름으로 묶어 종목 검색부터 해석까지
+              자연스럽게 이어지도록 만든 분석 챗봇입니다.
+            </p>
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              <span className="chip">Groq</span>
+              <span className="chip">yfinance</span>
+              <span className="chip">Finnhub</span>
+              <span className="chip">SSE</span>
+            </div>
+          </section>
+
+          <section className="space-y-3">
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-400">
+              <Sparkles className="h-4 w-4" />
+              Quick Prompts
+            </div>
+
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+              {EXAMPLES.map((example) => (
+                <button
+                  key={example}
+                  type="button"
+                  onClick={() => submitPrompt(example)}
+                  className="rounded-[22px] border border-black/5 bg-black/5 px-4 py-3 text-left text-sm font-medium text-zinc-700 transition hover:-translate-y-0.5 hover:border-indigo-400/25 hover:bg-indigo-500/8 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:border-indigo-400/25 dark:hover:bg-indigo-500/10"
+                >
+                  {example}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="flex min-h-0 flex-1 flex-col space-y-3">
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-400">
+              <History className="h-4 w-4" />
+              Recent Searches
+            </div>
+
+            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
+              {history.length === 0 ? (
+                <div className="rounded-[24px] border border-dashed border-black/10 bg-black/5 p-5 text-sm leading-7 text-zinc-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400">
+                  검색 기록은 브라우저에 저장됩니다. 첫 질문을 보내면 이곳에 최근 종목이 쌓입니다.
+                </div>
+              ) : (
+                history.map((entry) => (
+                  <button
+                    key={entry.id}
+                    type="button"
+                    onClick={() => submitPrompt(entry.prompt)}
+                    className="w-full rounded-[24px] border border-black/5 bg-black/5 p-4 text-left transition hover:-translate-y-0.5 hover:border-cyan-400/25 hover:bg-cyan-400/5 dark:border-white/10 dark:bg-white/5 dark:hover:border-cyan-400/25 dark:hover:bg-cyan-400/10"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="line-clamp-2 text-sm font-medium leading-6 text-zinc-900 dark:text-zinc-100">
+                        {entry.prompt}
+                      </p>
+                      <Clock3 className="mt-1 h-4 w-4 shrink-0 text-zinc-400" />
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {entry.tickers.map((ticker) => (
+                        <span
+                          key={ticker}
+                          className="rounded-full border border-black/5 bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 dark:border-white/10 dark:bg-white/10 dark:text-zinc-200"
+                        >
+                          {ticker}
+                        </span>
+                      ))}
+                    </div>
+                    <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
+                      {formatRelativeTime(entry.createdAt)}
+                    </p>
+                  </button>
+                ))
+              )}
+            </div>
+          </section>
+        </div>
+      </aside>
     </div>
   )
 }
