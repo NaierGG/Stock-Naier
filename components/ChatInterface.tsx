@@ -7,8 +7,7 @@ import {
   Clock3,
   History,
   LineChart,
-  Star,
-  X
+  Star
 } from "lucide-react"
 
 import MessageBubble from "@/components/MessageBubble"
@@ -404,11 +403,18 @@ export default function ChatInterface() {
       <div className="mx-auto flex min-h-screen max-w-[1440px]">
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-40 flex w-[260px] shrink-0 flex-col border-r border-border/60 bg-secondary/40 transition-transform duration-200 dark:bg-[#171717] lg:sticky lg:top-0 lg:h-screen lg:translate-x-0",
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            "fixed inset-y-0 left-0 z-40 flex shrink-0 flex-col border-r border-border/60 bg-secondary/40 transition-[width,transform] duration-200 dark:bg-[#171717] lg:sticky lg:top-0 lg:h-screen",
+            isSidebarOpen
+              ? "w-[260px] translate-x-0"
+              : "-translate-x-full border-r-0 lg:w-0 lg:overflow-hidden"
           )}
         >
-          <div className="relative flex h-full flex-col px-4 py-4">
+          <div
+            className={cn(
+              "relative flex h-full w-[260px] flex-col px-4 py-4 transition-opacity duration-150",
+              isSidebarOpen ? "opacity-100" : "pointer-events-none opacity-0"
+            )}
+          >
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-3">
