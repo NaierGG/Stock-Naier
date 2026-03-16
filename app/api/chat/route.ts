@@ -74,6 +74,8 @@ export async function POST(request: Request) {
           ]
         })
 
+        let fullContent = ""
+
         for await (const chunk of completion) {
           const text = chunk.choices[0]?.delta?.content ?? ""
 
@@ -81,7 +83,21 @@ export async function POST(request: Request) {
             continue
           }
 
+          fullContent += text
           controller.enqueue(encoder.encode(sseChunk("token", { text })))
+        }
+
+        const tldrMatch = fullContent.match(/TLDR_JSON:(\{[\s\S]*?\})/)
+
+        if (tldrMatch) {
+          try {
+            const parsed = JSON.parse(tldrMatch[1]) as { points: string[] }
+            controller.enqueue(
+              encoder.encode(sseChunk("tldr", { points: parsed.points }))
+            )
+          } catch {
+            // Ignore TL;DR parse failures
+          }
         }
 
         controller.enqueue(encoder.encode(sseChunk("done", {})))

@@ -1,7 +1,8 @@
 import "server-only"
 
-import type { NewsItem } from "@/types"
+import { groq, MODEL } from "@/lib/groq"
 import { isoDate } from "@/lib/utils"
+import type { NewsItem } from "@/types"
 
 const BASE_URL = "https://finnhub.io/api/v1/"
 
@@ -66,6 +67,63 @@ function isLikelyTickerSymbol(value: string) {
   return /^[A-Z]{1,5}(?:[.-][A-Z]{1,3})?$/.test(value)
 }
 
+async function translateNewsItems(items: NewsItem[]): Promise<NewsItem[]> {
+  if (items.length === 0 || !process.env.GROQ_API_KEY) {
+    return items
+  }
+
+  const payload = items.map((item, idx) => ({
+    idx,
+    headline: item.headline,
+    summary: item.summary?.slice(0, 300) ?? ""
+  }))
+
+  try {
+    const completion = await groq.chat.completions.create({
+      model: MODEL,
+      temperature: 0.2,
+      messages: [
+        {
+          role: "system",
+          content: [
+            "You are a Korean financial news translator.",
+            "Translate each item's headline and summary to natural Korean.",
+            "Return ONLY a JSON array (no markdown, no explanation) with this exact shape:",
+            '[{"idx":0,"headlineKo":"...","summaryKo":"..."}]',
+            "summaryKo should be 1-2 concise Korean sentences."
+          ].join(" ")
+        },
+        {
+          role: "user",
+          content: JSON.stringify(payload)
+        }
+      ]
+    })
+
+    const raw = completion.choices[0]?.message?.content ?? "[]"
+    const cleaned = raw.replace(/```json|```/g, "").trim()
+    const translated = JSON.parse(cleaned) as Array<{
+      idx: number
+      headlineKo: string
+      summaryKo: string
+    }>
+
+    return items.map((item, idx) => {
+      const match = translated.find((candidate) => candidate.idx === idx)
+      return match
+        ? {
+            ...item,
+            headlineKo: match.headlineKo,
+            summaryKo: match.summaryKo
+          }
+        : item
+    })
+  } catch (error) {
+    console.error("News translation failed", error)
+    return items
+  }
+}
+
 export async function searchFinnhubSymbol(query: string) {
   const trimmed = query.trim()
 
@@ -122,7 +180,7 @@ export async function fetchLatestNews(ticker: string): Promise<NewsItem[]> {
     return []
   }
 
-  return (news ?? [])
+  const rawItems: NewsItem[] = (news ?? [])
     .filter((item) => item.headline && item.url)
     .slice(0, 3)
     .map((item) => ({
@@ -132,4 +190,6 @@ export async function fetchLatestNews(ticker: string): Promise<NewsItem[]> {
       url: item.url ?? "",
       summary: item.summary ?? ""
     }))
+
+  return translateNewsItems(rawItems)
 }

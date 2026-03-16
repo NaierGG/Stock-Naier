@@ -23,6 +23,8 @@ export interface NewsItem {
   datetime: number
   url: string
   summary: string
+  summaryKo?: string
+  headlineKo?: string
 }
 
 export interface Message {
@@ -34,6 +36,7 @@ export interface Message {
   ticker?: string | null
   stocks?: StockData[]
   news?: NewsItem[]
+  tldr?: string[]
 }
 
 export interface SearchHistoryEntry {
@@ -41,6 +44,12 @@ export interface SearchHistoryEntry {
   prompt: string
   tickers: string[]
   createdAt: string
+}
+
+export interface WatchlistEntry {
+  ticker: string
+  name: string
+  addedAt: string
 }
 
 export interface ChatRequestBody {
@@ -53,4 +62,5 @@ export interface ChatMetaPayload {
   resolvedTicker: string | null
   stocks: StockData[]
   news: NewsItem[]
+  tldr?: string[]
 }

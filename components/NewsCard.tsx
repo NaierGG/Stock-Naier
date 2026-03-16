@@ -32,10 +32,15 @@ export default function NewsCard({ items }: { items: NewsItem[] }) {
 
                 <div>
                   <h4 className="line-clamp-3 text-sm font-semibold leading-6">
-                    {item.headline}
+                    {item.headlineKo ?? item.headline}
                   </h4>
+                  {item.headlineKo ? (
+                    <p className="mt-1 line-clamp-1 text-xs text-muted-foreground/60">
+                      {item.headline}
+                    </p>
+                  ) : null}
                   <p className="mt-3 line-clamp-3 text-xs leading-5 text-muted-foreground">
-                    {item.summary || "요약이 제공되지 않았습니다."}
+                    {item.summaryKo ?? item.summary ?? "요약이 제공되지 않았습니다."}
                   </p>
                 </div>
               </CardContent>
