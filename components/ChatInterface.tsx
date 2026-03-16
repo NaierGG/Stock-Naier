@@ -1,7 +1,15 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { Clock3, History, LineChart, PanelLeft, Star, X } from "lucide-react"
+import {
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  History,
+  LineChart,
+  Star,
+  X
+} from "lucide-react"
 
 import MessageBubble from "@/components/MessageBubble"
 import SearchInput from "@/components/SearchInput"
@@ -382,48 +390,51 @@ export default function ChatInterface() {
         />
       ) : null}
 
+      {!isSidebarOpen ? (
+        <button
+          type="button"
+          aria-label="사이드바 열기"
+          className="fixed bottom-6 left-4 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-border/80 bg-card text-muted-foreground shadow-lg transition hover:text-foreground"
+          onClick={() => setIsSidebarOpen(true)}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      ) : null}
+
       <div className="mx-auto flex min-h-screen max-w-[1440px]">
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-40 flex w-[280px] shrink-0 flex-col border-r border-border/60 bg-background transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0",
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
-            isDesktop && !isSidebarOpen ? "lg:w-0 lg:border-r-0 lg:overflow-hidden" : ""
+            "fixed inset-y-0 left-0 z-40 flex w-[260px] shrink-0 flex-col border-r border-border/60 bg-secondary/40 transition-transform duration-200 dark:bg-[#171717] lg:sticky lg:top-0 lg:h-screen lg:translate-x-0",
+            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >
-          <div
-            className={cn(
-              "flex h-full flex-col px-5 py-6 transition-opacity duration-200",
-              isDesktop && !isSidebarOpen ? "lg:pointer-events-none lg:opacity-0" : "opacity-100"
-            )}
-          >
+          <div className="relative flex h-full flex-col px-4 py-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-secondary text-foreground">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-background text-foreground">
                     <LineChart className="h-4 w-4" />
                   </div>
                   <p className="text-sm font-semibold">Stock-Naier</p>
                 </div>
                 <p className="mt-4 text-sm leading-6 text-muted-foreground">
-                  관심 종목과 최근 질문을 모아두고 빠르게 다시 물어볼 수 있습니다.
+                  관심 종목과 최근 질문을 빠르게 다시 꺼내볼 수 있습니다.
                 </p>
               </div>
 
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="lg:hidden"
-                onClick={() => setIsSidebarOpen(false)}
-                aria-label="사이드바 닫기"
-              >
-                <X className="h-4 w-4" />
-              </Button>
+              <div className="lg:hidden">
+                <ThemeToggle
+                  theme={theme}
+                  onToggle={() =>
+                    setTheme((current) => (current === "dark" ? "light" : "dark"))
+                  }
+                />
+              </div>
             </div>
 
-            <div className="mt-10">
-              <p className="text-xs font-medium text-muted-foreground">빠른 질문</p>
-              <div className="mt-3 space-y-2">
+            <div className="mt-8">
+              <p className="px-2 text-xs font-medium text-muted-foreground">빠른 질문</p>
+              <div className="mt-2 space-y-1">
                 {QUICK_PROMPTS.map((example) => (
                   <Button
                     key={example}
@@ -438,14 +449,14 @@ export default function ChatInterface() {
               </div>
             </div>
 
-            <div className="mt-8">
-              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <div className="mt-6">
+              <div className="flex items-center gap-2 px-2 text-xs font-medium text-muted-foreground">
                 <Star className="h-4 w-4" />
                 관심 종목
               </div>
-              <div className="mt-3 space-y-1">
+              <div className="mt-2 space-y-1">
                 {watchlist.length === 0 ? (
-                  <p className="px-1 text-xs text-muted-foreground">
+                  <p className="px-3 py-2 text-xs text-muted-foreground">
                     종목 카드의 별 버튼으로 추가하세요.
                   </p>
                 ) : (
@@ -454,7 +465,7 @@ export default function ChatInterface() {
                       key={entry.ticker}
                       type="button"
                       variant="ghost"
-                      className="h-auto w-full justify-start rounded-2xl px-3 py-2"
+                      className="h-auto w-full justify-start rounded-2xl px-3 py-2.5"
                       onClick={() => submitPrompt(`${entry.ticker} 분석해줘`)}
                     >
                       <Star className="mr-2 h-3.5 w-3.5 fill-current text-amber-500" />
@@ -468,18 +479,18 @@ export default function ChatInterface() {
               </div>
             </div>
 
-            <div className="mt-8 flex min-h-0 flex-1 flex-col">
-              <div className="flex items-center justify-between">
+            <div className="mt-6 flex min-h-0 flex-1 flex-col">
+              <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                   <History className="h-4 w-4" />
                   최근 검색
                 </div>
                 <span className="text-xs text-muted-foreground">{history.length}</span>
               </div>
-              <ScrollArea className="mt-3 flex-1 pr-2">
-                <div className="space-y-2 pb-2">
+              <ScrollArea className="mt-2 flex-1 pr-1">
+                <div className="space-y-1 pb-2">
                   {history.length === 0 ? (
-                    <Card className="rounded-2xl shadow-none">
+                    <Card className="rounded-2xl bg-background/60 shadow-none">
                       <CardContent className="p-4 text-sm leading-6 text-muted-foreground">
                         아직 검색 기록이 없습니다.
                       </CardContent>
@@ -492,8 +503,8 @@ export default function ChatInterface() {
                         onClick={() => submitPrompt(entry.prompt)}
                         className="w-full text-left"
                       >
-                        <Card className="rounded-2xl shadow-none transition-colors hover:bg-secondary/80">
-                          <CardContent className="space-y-3 p-4">
+                        <Card className="rounded-2xl bg-background/60 shadow-none transition-colors hover:bg-background">
+                          <CardContent className="space-y-2 p-4">
                             <p className="line-clamp-2 text-sm font-medium leading-6">
                               {entry.prompt}
                             </p>
@@ -515,31 +526,39 @@ export default function ChatInterface() {
                 </div>
               </ScrollArea>
             </div>
-          </div>
-        </aside>
 
-        <main className="flex min-h-screen min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-20 border-b border-border/60 bg-background/85 backdrop-blur">
-            <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-4 lg:px-8">
-              <div className="flex items-center gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setIsSidebarOpen((current) => !current)}
-                  aria-label={isSidebarOpen ? "사이드바 닫기" : "사이드바 열기"}
-                >
-                  <PanelLeft className="h-4 w-4" />
-                </Button>
-                <p className="text-sm font-semibold">Stock-Naier</p>
-              </div>
+            <button
+              type="button"
+              aria-label="사이드바 닫기"
+              className="absolute -right-4 bottom-6 flex h-10 w-10 items-center justify-center rounded-full border border-border/80 bg-card text-muted-foreground shadow-lg transition hover:text-foreground"
+              onClick={() => setIsSidebarOpen(false)}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
 
+            <div className="mt-4 hidden lg:block">
               <ThemeToggle
                 theme={theme}
                 onToggle={() =>
                   setTheme((current) => (current === "dark" ? "light" : "dark"))
                 }
               />
+            </div>
+          </div>
+        </aside>
+
+        <main className="flex min-h-screen min-w-0 flex-1 flex-col">
+          <header className="sticky top-0 z-20 border-b border-border/60 bg-background/85 backdrop-blur">
+            <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-4 lg:px-8">
+              <p className="text-sm font-semibold">Stock-Naier</p>
+              <div className="hidden lg:block">
+                <ThemeToggle
+                  theme={theme}
+                  onToggle={() =>
+                    setTheme((current) => (current === "dark" ? "light" : "dark"))
+                  }
+                />
+              </div>
             </div>
           </header>
 
@@ -622,11 +641,8 @@ export default function ChatInterface() {
                 <SearchInput
                   value={prompt}
                   disabled={isStreaming}
-                  showExamples={false}
-                  examples={QUICK_PROMPTS}
                   onChange={setPrompt}
                   onSubmit={() => submitPrompt()}
-                  onPickExample={(example) => submitPrompt(example)}
                 />
               </div>
             </div>
