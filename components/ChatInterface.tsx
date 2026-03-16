@@ -1,15 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import {
-  Clock3,
-  History,
-  LineChart,
-  PanelLeft,
-  Sparkles,
-  Star,
-  X
-} from "lucide-react"
+import { Clock3, History, LineChart, PanelLeft, Star, X } from "lucide-react"
 
 import MessageBubble from "@/components/MessageBubble"
 import SearchInput from "@/components/SearchInput"
@@ -410,31 +402,23 @@ export default function ChatInterface() {
                   <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-secondary text-foreground">
                     <LineChart className="h-4 w-4" />
                   </div>
-                  <p className="text-sm font-semibold">Stock Signal Chat</p>
+                  <p className="text-sm font-semibold">Stock-Naier</p>
                 </div>
                 <p className="mt-4 text-sm leading-6 text-muted-foreground">
-                  실시간 시세와 뉴스 흐름을 바탕으로 종목을 정리해주는 분석 챗봇입니다.
+                  관심 종목과 최근 질문을 모아두고 빠르게 다시 물어볼 수 있습니다.
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
-                <ThemeToggle
-                  theme={theme}
-                  onToggle={() =>
-                    setTheme((current) => (current === "dark" ? "light" : "dark"))
-                  }
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="lg:hidden"
-                  onClick={() => setIsSidebarOpen(false)}
-                  aria-label="사이드바 닫기"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+                onClick={() => setIsSidebarOpen(false)}
+                aria-label="사이드바 닫기"
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
 
             <div className="mt-10">
@@ -462,7 +446,7 @@ export default function ChatInterface() {
               <div className="mt-3 space-y-1">
                 {watchlist.length === 0 ? (
                   <p className="px-1 text-xs text-muted-foreground">
-                    종목 카드의 ☆ 버튼으로 추가하세요.
+                    종목 카드의 별 버튼으로 추가하세요.
                   </p>
                 ) : (
                   watchlist.map((entry) => (
@@ -531,13 +515,6 @@ export default function ChatInterface() {
                 </div>
               </ScrollArea>
             </div>
-
-            <Card className="mt-6 rounded-2xl border-border/60 bg-secondary/50 shadow-none">
-              <CardContent className="p-4 text-sm leading-6 text-muted-foreground">
-                티커와 원하는 관점을 함께 적으면 더 좋은 답변을 받을 수 있습니다.
-                예: &quot;SCHD 배당 안정성 어때?&quot;
-              </CardContent>
-            </Card>
           </div>
         </aside>
 
@@ -554,28 +531,15 @@ export default function ChatInterface() {
                 >
                   <PanelLeft className="h-4 w-4" />
                 </Button>
-
-                <div>
-                  <p className="text-sm font-semibold">Stock Signal Chat</p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    실시간 시세와 뉴스 문맥을 함께 읽는 주식 분석 챗봇
-                  </p>
-                </div>
+                <p className="text-sm font-semibold">Stock-Naier</p>
               </div>
 
-              <div className="flex items-center gap-2">
-                <Badge variant="muted" className="hidden sm:inline-flex">
-                  Groq · yfinance · Finnhub
-                </Badge>
-                <div className="lg:hidden">
-                  <ThemeToggle
-                    theme={theme}
-                    onToggle={() =>
-                      setTheme((current) => (current === "dark" ? "light" : "dark"))
-                    }
-                  />
-                </div>
-              </div>
+              <ThemeToggle
+                theme={theme}
+                onToggle={() =>
+                  setTheme((current) => (current === "dark" ? "light" : "dark"))
+                }
+              />
             </div>
           </header>
 
@@ -583,17 +547,13 @@ export default function ChatInterface() {
             <div className="mx-auto flex h-full w-full max-w-5xl flex-1 flex-col px-4 lg:px-8">
               {emptyState ? (
                 <div className="flex flex-1 items-center">
-                  <div className="mx-auto w-full max-w-3xl py-16 text-center">
-                    <Badge variant="muted" className="mx-auto inline-flex">
-                      <Sparkles className="h-3.5 w-3.5" />
-                      실시간 분석 준비 완료
-                    </Badge>
-                    <h1 className="mt-6 text-4xl font-semibold tracking-tight sm:text-5xl">
-                      무엇이 궁금한가요?
+                  <div className="mx-auto flex w-full max-w-3xl flex-col items-center py-16 text-center">
+                    <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+                      무엇을 도와드릴까요?
                     </h1>
-                    <p className="mt-4 text-base leading-7 text-muted-foreground">
-                      종목명이나 티커를 입력하면 현재 시세, 주요 뉴스, 투자 포인트를
-                      한 번에 정리해드립니다.
+                    <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
+                      종목명, 티커, 비교 질문을 자연스럽게 입력해 보세요. 시세와 뉴스,
+                      핵심 포인트를 한 번에 정리해드립니다.
                     </p>
 
                     <div className="mt-8 flex flex-wrap justify-center gap-2">
@@ -610,37 +570,8 @@ export default function ChatInterface() {
                       ))}
                     </div>
 
-                    <div className="mt-10 grid gap-3 text-left sm:grid-cols-3">
-                      {[
-                        {
-                          title: "시세 요약",
-                          description:
-                            "현재가, 등락률, 52주 범위와 기본 지표를 보여줍니다."
-                        },
-                        {
-                          title: "뉴스 맥락",
-                          description:
-                            "최신 뉴스 3건을 함께 붙여서 답변의 배경을 제공합니다."
-                        },
-                        {
-                          title: "AI 정리",
-                          description:
-                            "초보자도 읽기 쉽게 장점, 단점, 유의점을 요약합니다."
-                        }
-                      ].map((item) => (
-                        <Card key={item.title} className="rounded-3xl shadow-none">
-                          <CardContent className="p-5">
-                            <p className="text-sm font-semibold">{item.title}</p>
-                            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                              {item.description}
-                            </p>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-
                     {history.length > 0 ? (
-                      <div className="mt-10 text-left lg:hidden">
+                      <div className="mt-10 w-full max-w-2xl text-left lg:hidden">
                         <div className="mb-3 flex items-center gap-2 text-sm font-medium">
                           <Clock3 className="h-4 w-4 text-muted-foreground" />
                           최근 검색
@@ -691,7 +622,7 @@ export default function ChatInterface() {
                 <SearchInput
                   value={prompt}
                   disabled={isStreaming}
-                  showExamples={emptyState}
+                  showExamples={false}
                   examples={QUICK_PROMPTS}
                   onChange={setPrompt}
                   onSubmit={() => submitPrompt()}
